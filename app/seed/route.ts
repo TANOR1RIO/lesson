@@ -101,6 +101,35 @@ async function seedRevenue() {
   return insertedRevenue;
 }
 
+async function seedComments() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS comments (
+      id SERIAL PRIMARY KEY,
+      comment TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  // Добавляем несколько примеров комментариев
+  const sampleComments = [
+    'Добро пожаловать в наше приложение!',
+    'Это отличный пример использования Next.js с базой данных.',
+    'Server Actions делают работу с формами очень простой.'
+  ];
+
+  const insertedComments = await Promise.all(
+    sampleComments.map(
+      (comment) => sql`
+        INSERT INTO comments (comment)
+        VALUES (${comment})
+        ON CONFLICT DO NOTHING;
+      `,
+    ),
+  );
+
+  return insertedComments;
+}
+
 export async function GET() {
   try {
     const result = await sql.begin((sql) => [
@@ -108,6 +137,7 @@ export async function GET() {
       seedCustomers(),
       seedInvoices(),
       seedRevenue(),
+      seedComments(),
     ]);
 
     return Response.json({ message: 'Database seeded successfully' });

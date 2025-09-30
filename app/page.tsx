@@ -4,14 +4,58 @@ import Link from 'next/link';
 import styles from '@/app/ui/home.module.css';
 import { lusitana } from '@/app/ui/fonts';
 import Image from 'next/image';
+import { neon } from '@neondatabase/serverless';
 
 
 export default function Page() {
+  async function create(formData: FormData) {
+    'use server';
+    // Подключение к базе данных Neon
+    const sql = neon(`${process.env.DATABASE_URL}`);
+    const comment = formData.get('comment');
+    
+    // Вставка комментария из формы в базу данных Postgres
+    await sql('INSERT INTO comments (comment) VALUES ($1)', [comment]);
+  }
+
   return (
     <main className="flex min-h-screen flex-col p-6">
       <div className="flex h-20 shrink-0 items-end rounded-lg bg-blue-500 p-4 md:h-52">
         <AcmeLogo />
         {/* <AcmeLogo /> */}
+      </div>
+      
+      {/* Форма для комментариев */}
+      <div className="mt-4 rounded-lg bg-white p-6 shadow-md">
+        <h2 className={`${lusitana.className} text-2xl font-bold text-gray-800 mb-4`}>
+          Оставить комментарий
+        </h2>
+        <form action={create} className="space-y-4">
+          <div>
+            <input 
+              type="text" 
+              placeholder="Напишите комментарий..." 
+              name="comment" 
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <button 
+            type="submit" 
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            Отправить
+          </button>
+        </form>
+        
+        <div className="mt-4">
+          <Link 
+            href="/comments" 
+            className="text-blue-500 hover:text-blue-600 underline"
+          >
+            Посмотреть все комментарии →
+          </Link>
+        </div>
       </div>
       <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
         <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
